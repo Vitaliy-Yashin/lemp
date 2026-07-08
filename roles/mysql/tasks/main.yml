@@ -1,0 +1,45 @@
+- name: Including vars
+  ansible.builtin.include_vars:
+    file: vault/secret.yml
+
+- name: Mysql-Server install
+  ansible.builtin.apt:
+    name: mysql-server
+    state: present
+    update_cache: yes
+
+- name: MySQL enable
+  ansible.builtin.systemd:
+    name: mysql
+    enabled: true 
+    state: started  
+
+- name: Install PyMySQL for MySQL module
+  ansible.builtin.apt:
+    name: python3-pymysql
+    state: present
+    update_cache: yes    
+
+- name: Set root's password 
+  ansible.mysql.mysql_user:
+    login_user: root
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    name: "{{ mysql_root.name }}"
+    password: "{{ mysql_root.password }}"
+    host: localhost
+    state: present
+
+- name: Set db users
+  ansible.mysql.mysql_user:
+    login_user: "{{ mysql_root.name }}"
+    login_password: "{{ mysql_root.password }}"
+    name: "{{ item.name }}"
+    password: "{{ item.password }}"
+    host: localhost
+    state: present
+
+  loop: "{{ mysql_db_users }}"
+  loop_control:
+    label: "{{ item.name }}"
+      
+

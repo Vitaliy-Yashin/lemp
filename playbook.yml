@@ -1,0 +1,10 @@
+---
+- name: LEMP
+  hosts: 
+    - lemp_locals
+    - lemp_clouds  
+  become: true
+  roles:
+    - php
+    - mysql
+    - nginx

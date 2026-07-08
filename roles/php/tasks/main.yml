@@ -1,0 +1,23 @@
+- name: PHP install
+  ansible.builtin.apt:
+    name:
+    - php-fpm
+    - php-mysql 
+    state: present
+    update_cache: yes
+
+- name: Get PHP-FPM service name
+  ansible.builtin.shell:
+    cmd: systemctl list-units --all | grep -i fpm | awk '{print $1}' 
+  register: php_fpm_service
+  changed_when: false
+
+- name: Set fact PHP-FPM service name  
+  ansible.builtin.set_fact:
+    php_fpm_service_name: "{{ php_fpm_service.stdout | replace('.service', '') }}" 
+
+- name: restart php-fpm
+  ansible.builtin.systemd:
+    name: "{{ php_fpm_service.stdout }}"
+    state: started
+    enabled: true
